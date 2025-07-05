@@ -1,13 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import packetService from '../services/api';
 // Remove this import: import Header from './Header';
 import './PacketTable.css';
 
+// Debounce utility function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 const PacketTable = () => {
   const [packets, setPackets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filtering, setFiltering] = useState(false);
   const [filters, setFilters] = useState({
     protocol: '',
     src_ip: '',
@@ -18,13 +32,39 @@ const PacketTable = () => {
   });
   const navigate = useNavigate();
 
+  // Debounced filter application
+  const debouncedApplyFilters = useCallback(
+    debounce((filterParams) => {
+      fetchPackets(filterParams);
+    }, 500),
+    []
+  );
+
   useEffect(() => {
     fetchPackets();
   }, []);
 
+  // Auto-apply filters when they change (with debounce)
+  useEffect(() => {
+    const activeFilters = Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== '')
+    );
+    
+    if (Object.keys(activeFilters).length > 0) {
+      debouncedApplyFilters(activeFilters);
+    }
+  }, [filters, debouncedApplyFilters]);
+
   const fetchPackets = async (filterParams = {}) => {
     try {
-      setLoading(true);
+      const isFiltering = Object.keys(filterParams).length > 0;
+      
+      if (isFiltering) {
+        setFiltering(true);
+      } else {
+        setLoading(true);
+      }
+      
       const data = await packetService.getPackets(filterParams);
       setPackets(data);
       setError(null);
@@ -33,6 +73,7 @@ const PacketTable = () => {
       console.error(err);
     } finally {
       setLoading(false);
+      setFiltering(false);
     }
   };
 
@@ -45,15 +86,14 @@ const PacketTable = () => {
   };
 
   const applyFilters = () => {
+    console.log('Applying filters:', filters);
     // Remove empty filters
     const activeFilters = Object.fromEntries(
       Object.entries(filters).filter(([_, value]) => value !== '')
     );
     
-    // Handle port filtering separately since it can be in src_port or dst_port
-    const { port, ...otherFilters } = activeFilters;
-    
-    fetchPackets(otherFilters);
+    console.log('Active filters:', activeFilters);
+    fetchPackets(activeFilters);
   };
 
   const resetFilters = () => {
@@ -124,13 +164,20 @@ const PacketTable = () => {
     <div className="error-container">{error}</div>
   );
 
+  // Check if any filters are active
+  const hasActiveFilters = Object.values(filters).some(value => value !== '');
+
   return (
     // Remove the outer Header component
     <div className="packet-table-container">
       <h2>Network Packets</h2>
       
       <div className="filter-panel">
-          <h3>Filters</h3>
+          <h3>
+            Filters 
+            {hasActiveFilters && <span className="filter-indicator">● Active</span>}
+            {filtering && <span className="filter-loading">🔄 Filtering...</span>}
+          </h3>
           <div className="filter-controls">
             <div className="filter-group">
               <label>Protocol:</label>
@@ -198,7 +245,12 @@ const PacketTable = () => {
             
             <div className="filter-actions">
               <button className="apply-btn" onClick={applyFilters}>Apply Filters</button>
-              <button className="reset-btn" onClick={resetFilters}>Reset</button>
+              <button className="reset-btn" onClick={resetFilters}>Clear All</button>
+              {hasActiveFilters && (
+                <span className="active-filters-count">
+                  {Object.values(filters).filter(v => v !== '').length} filter(s) active
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -246,6 +298,9 @@ const PacketTable = () => {
         
         <div className="table-stats">
           Displaying {packets.length} packets
+          {hasActiveFilters && (
+            <span className="filter-info"> (filtered)</span>
+          )}
         </div>
       </div>
   );

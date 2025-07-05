@@ -35,14 +35,66 @@ const packetService = {
   apiBaseUrl: API_BASE_URL,
   
   /**
-   * Fetch all packets from the server
+   * Fetch all packets from the server with optional filtering
    */
   async getPackets(filters = {}) {
     try {
-      console.log('API: Fetching packets...');
+      console.log('API: Fetching packets with filters:', filters);
       const response = await axios.get(`${API_BASE_URL}/packets`);
       console.log('API: Packets received, count:', response.data.length);
-      return response.data;
+      
+      let filteredPackets = response.data;
+      
+      // Apply client-side filtering if filters are provided
+      if (Object.keys(filters).length > 0) {
+        filteredPackets = response.data.filter(packet => {
+          // Protocol filter
+          if (filters.protocol && packet.protocol && 
+              !packet.protocol.toLowerCase().includes(filters.protocol.toLowerCase())) {
+            return false;
+          }
+          
+          // Source IP filter
+          if (filters.src_ip && packet.src_ip && 
+              !packet.src_ip.includes(filters.src_ip)) {
+            return false;
+          }
+          
+          // Destination IP filter
+          if (filters.dst_ip && packet.dst_ip && 
+              !packet.dst_ip.includes(filters.dst_ip)) {
+            return false;
+          }
+          
+          // Port filter (check both source and destination ports)
+          if (filters.port) {
+            const portMatch = (packet.src_port && packet.src_port.toString().includes(filters.port)) ||
+                             (packet.dst_port && packet.dst_port.toString().includes(filters.port));
+            if (!portMatch) {
+              return false;
+            }
+          }
+          
+          // Time range filtering
+          if (filters.startTime || filters.endTime) {
+            const packetTime = new Date(packet.timestamp);
+            
+            if (filters.startTime && packetTime < new Date(filters.startTime)) {
+              return false;
+            }
+            
+            if (filters.endTime && packetTime > new Date(filters.endTime)) {
+              return false;
+            }
+          }
+          
+          return true;
+        });
+        
+        console.log('API: Filtered packets count:', filteredPackets.length);
+      }
+      
+      return filteredPackets;
     } catch (error) {
       console.error('Error fetching packets:', error);
       // Return empty array to avoid null/undefined errors

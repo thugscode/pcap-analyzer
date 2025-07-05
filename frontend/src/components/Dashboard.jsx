@@ -14,7 +14,7 @@ const Dashboard = () => {
     totalPackets: 0,
     totalBytes: 0,
     averagePacketSize: 0,
-    timeRange: { start: null, end: null },
+    timeRange: { start: 'Loading...', end: 'Loading...' },
     securityAlerts: []
   });
 
@@ -124,10 +124,46 @@ const Dashboard = () => {
         
         // Sort timestamps and get range
         timestamps.sort();
-        const timeRange = {
-          start: timestamps.length > 0 ? new Date(timestamps[0] * 1000).toLocaleString() : 'Unknown',
-          end: timestamps.length > 0 ? new Date(timestamps[timestamps.length-1] * 1000).toLocaleString() : 'Unknown'
+        
+        let timeRange = {
+          start: 'No data available',
+          end: 'No data available'
         };
+        
+        if (timestamps.length > 0) {
+          try {
+            // Handle different timestamp formats
+            const parseTimestamp = (timestamp) => {
+              if (typeof timestamp === 'number') {
+                // If it's a number, check if it's in seconds or milliseconds
+                if (timestamp < 1000000000000) { // Less than year 2001 in milliseconds, so it's probably seconds
+                  return new Date(timestamp * 1000);
+                } else {
+                  return new Date(timestamp);
+                }
+              } else if (typeof timestamp === 'string') {
+                // Try to parse as date string
+                const parsed = new Date(timestamp);
+                if (!isNaN(parsed.getTime())) {
+                  return parsed;
+                }
+              }
+              return null;
+            };
+            
+            const startDate = parseTimestamp(timestamps[0]);
+            const endDate = parseTimestamp(timestamps[timestamps.length - 1]);
+            
+            if (startDate && endDate) {
+              timeRange = {
+                start: startDate.toLocaleString(),
+                end: endDate.toLocaleString()
+              };
+            }
+          } catch (error) {
+            console.error('Error parsing timestamps:', error);
+          }
+        }
         
         // Make sure response has the expected structure
         setStats({
@@ -168,6 +204,15 @@ const Dashboard = () => {
       } catch (err) {
         console.error('Failed to load packet statistics:', err);
         setError('Failed to load packet statistics. Is the server running?');
+        
+        // Set fallback values for time range in case of error
+        setStats(prev => ({
+          ...prev,
+          timeRange: {
+            start: 'Unable to load',
+            end: 'Unable to load'
+          }
+        }));
       } finally {
         setLoading(false);
       }
@@ -188,7 +233,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <h1>PCAP Analysis Dashboard</h1>
+      <h1>Dashboard</h1>
       
       <div className="stats-overview">
         <div className="stat-card">
@@ -206,8 +251,14 @@ const Dashboard = () => {
         <div className="stat-card">
           <h3>Time Period</h3>
           <div className="time-period">
-            <div>From: {stats.timeRange.start}</div>
-            <div>To: {stats.timeRange.end}</div>
+            <div className="time-range-item">
+              <span className="time-label">From:</span>
+              <span className="time-value">{stats.timeRange.start}</span>
+            </div>
+            <div className="time-range-item">
+              <span className="time-label">To:</span>
+              <span className="time-value">{stats.timeRange.end}</span>
+            </div>
           </div>
         </div>
       </div>

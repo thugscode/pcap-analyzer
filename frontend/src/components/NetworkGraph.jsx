@@ -37,12 +37,13 @@ const NetworkGraph = () => {
           // Calculate additional metrics
           const nodePackets = node.packets || 0;
           const nodeBytes = node.bytes || 0;
+          const nodeType = node.type || 'internal';
           
           newGraph.addNode(node.id, {
             label: node.label || node.id,
             size: node.size || 10,
-            color: node.type === 'external' ? '#FF6384' : '#36A2EB',
-            type: node.type || 'internal',
+            color: nodeType === 'external' ? '#FF6384' : '#36A2EB',
+            nodeType: nodeType, // Use nodeType instead of type to avoid Sigma.js conflicts
             // Add more information for hover tooltip
             packets: nodePackets,
             bytes: nodeBytes,
@@ -51,7 +52,7 @@ const NetworkGraph = () => {
             firstSeen: node.firstSeen || '',
             lastSeen: node.lastSeen || '',
             // Add class for hover styles
-            classes: [`${node.type || 'internal'}-node`]
+            classes: [`${nodeType}-node`]
           });
         });
         
@@ -264,7 +265,7 @@ const NetworkGraph = () => {
         </div>
         <div className="node-tooltip-row">
           <span className="node-tooltip-label">Type:</span>
-          <span>{node.type === 'external' ? 'External' : 'Internal'}</span>
+          <span>{node.nodeType === 'external' ? 'External' : 'Internal'}</span>
         </div>
         {node.connections && (
           <div className="node-tooltip-row">
