@@ -1,0 +1,10 @@
+.size-histogram {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.size-histogram svg {
+  max-width: 100%;
+}

@@ -1,0 +1,28 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
+h1, h2, h3 {
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.chart {
+    margin: 20px 0;
+}
+
+.upload-button {
+    margin: 20px 0;
+}
+
+.responsive {
+    width: 100%;
+    height: auto;
+}

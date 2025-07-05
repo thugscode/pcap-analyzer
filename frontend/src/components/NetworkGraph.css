@@ -1,0 +1,183 @@
+.network-graph {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+}
+
+.network-graph h1 {
+  margin-bottom: 20px;
+}
+
+.network-graph h2 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.graph-info {
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.graph-container {
+  flex: 1;
+  height: 700px !important; /* Force a fixed height with !important */
+  min-height: 600px !important; /* Set minimum height */
+  width: 100% !important;
+  position: relative !important;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  overflow: hidden; /* Prevent content from spilling out */
+  display: block; /* Ensure it's displayed as a block */
+}
+
+/* Add these to ensure sigma canvas elements use full height */
+.sigma-container, 
+.sigma-scene, 
+.sigma-mouse, 
+.sigma-hovers {
+  height: 100% !important;
+  width: 100% !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+}
+
+.graph-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.graph-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.legend {
+  display: inline-block;
+  font-size: 24px;
+  line-height: 0;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+.legend.internal {
+  color: #36A2EB;
+}
+
+.legend.external {
+  color: #FF6384;
+}
+
+/* Enhance loading UI */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 600px;
+  font-size: 1.2rem;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* Add zoom controls */
+.zoom-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 10;
+}
+
+.zoom-controls button {
+  width: 30px;
+  height: 30px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.zoom-controls button:hover {
+  background: #f5f5f5;
+}
+
+/* Tooltip styles */
+.node-tooltip {
+  position: absolute;
+  background: rgba(35, 35, 35, 0.9);
+  color: white;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 12px;
+  max-width: 300px;
+  z-index: 1000;
+  pointer-events: none; /* Allows clicking through the tooltip */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.3s;
+}
+
+.node-tooltip h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 5px;
+}
+
+.node-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.node-tooltip-label {
+  font-weight: 600;
+  margin-right: 10px;
+  color: #c9c9c9;
+}
+
+/* Highlight nodes on hover */
+.sigma-hover {
+  border: 2px solid #f39c12 !important;
+  box-shadow: 0 0 10px rgba(243, 156, 18, 0.8) !important;
+}
+
+.internal-node.sigma-hover {
+  border-color: #3498db !important;
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.8) !important;
+}
+
+.external-node.sigma-hover {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.8) !important;
+}
